@@ -7,7 +7,7 @@ function isLoggedIn(req, res, next) {
         jwt.verify(token, process.env.TOKEN, (err, data) => {
             if (err) {
                 console.log(err);
-                req.user = null;
+                req.user = "unsigned";
                 req.session.seller = false;
             } else {
                 req.user = data;
@@ -15,7 +15,7 @@ function isLoggedIn(req, res, next) {
             next();
         });
     } else {
-        req.user = null;
+        req.user = "unsigned";
         req.session.seller = false;
         next();
     }
