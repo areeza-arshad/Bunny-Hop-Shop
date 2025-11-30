@@ -126,4 +126,16 @@ router.get('/plusproducts', isLoggedInStrict, isSeller, async (req,res) => {
     res.render('plusproducts', {products: seller.products, user: req.user, cart})
 })
 
+router.delete('/products/:id', isLoggedIn, async (req, res) => {
+  try {
+    await productsModel.findByIdAndDelete(req.params.id);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false });
+  }
+});
+
+
+
 module.exports = router

@@ -39,7 +39,7 @@
                 </div>
               </div>
               <div class="ml-auto">
-                <h4 class="text-lg font-bold text-gray-800">$<%= product.productId.price %></h4>
+                <h4 class="text-lg font-bold text-gray-800">PKR <%= product.productId.price %></h4>
                 <button type="button" class="mt-4 flex items-center px-3 py-1.5 border border-gray-300 text-gray-800 text-xs outline-none bg-transparent rounded-sm minus">
                   <svg onclick="window.location.href='sub-quantity/<%= product._id %>'" xmlns="http://www.w3.org/2000/svg" class="w-2.5 fill-current" viewBox="0 0 124 124">
                     <path d="M112 50H12C5.4 50 0 55.4 0 62s5.4 12 12 12h100c6.6 0 12-5.4 12-12s-5.4-12-12-12z" data-original="#000000"></path>
@@ -104,10 +104,10 @@
               </div>
             </div>
             <ul class="text-gray-800 mt-4 space-y-2">
-              <li class="flex flex-wrap gap-4 text-sm">Subtotal <span class="ml-auto font-bold">$<%=price.toFixed(2)%></span></li>
-              <li class="flex flex-wrap gap-4 text-sm">Shipping <span class="ml-auto font-bold">$5.00</span></li>
+              <li class="flex flex-wrap gap-4 text-sm">Subtotal <span class="ml-auto font-bold">PKR <%=price.toFixed(2)%></span></li>
+              <li class="flex flex-wrap gap-4 text-sm">Shipping <span class="ml-auto font-bold">PKR 5.00</span></li>
               <hr class="border-gray-300" />
-              <li class="flex flex-wrap gap-4 text-sm font-bold">Total <span class="ml-auto">$<%=(price + 5).toFixed(2) %></span></li>
+              <li class="flex flex-wrap gap-4 text-sm font-bold">Total <span class="ml-auto">PKR <%=(price + 5).toFixed(2) %></span></li>
             </ul>
             <div class="mt-4 space-y-2">
               <button type="submit" class="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-gray-800 hover:bg-gray-900 text-white rounded-sm">Checkout</button>
