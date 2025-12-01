@@ -21,7 +21,7 @@ router.get('/', isLoggedIn, async function (req, res) {
     let feat = await productModel.find({ tags: 'featured' });
     let trendy = await productModel.find({ tags: 'trend' });
 
-    //  FIX: If user is unsigned OR req.user is null/undefined → no username access
+ 
     if (!req.user || req.user === 'unsigned') {
         return res.render('index', {
             user: 'unsigned',
@@ -32,7 +32,7 @@ router.get('/', isLoggedIn, async function (req, res) {
         });
     }
 
-    //  SAFE: Only runs when req.user exists and has username
+
     let user = await userModel.findOne({ username: req.user.username });
     let cart = user?.cart || [];
 
@@ -267,7 +267,8 @@ router.get('/clothings/:category', isLoggedIn, async (req, res) => {
 // })
 
 router.get('/fits/:gender', isLoggedIn, async (req, res) => {
-    let selectedProducts = await productsModel.find({ gender: req.params.gender, isApproved: true });
+    console.log(req.params.gender.toLowerCase().slice(0,-1))
+    let selectedProducts = await productsModel.find({ gender: req.params.gender.toLowerCase().slice(0,-1), isApproved: true });
 
     let gender = req.params.gender.toLowerCase();
     let displayGender = gender.charAt(0).toUpperCase() + gender.slice(1);
