@@ -10,6 +10,7 @@ const db = require('./config/mongoose.connection')
 const sellerRouter = require('./routes/seller-router')
 const flash = require('connect-flash')
 const expressSession = require('express-session')
+const salesRouter = require("./routes/sales-router")
 
 
 app.get('/privacy-policy', (req, res) => {
@@ -52,6 +53,7 @@ app.use('/', indexRouter)
 app.use('/shipment', indexRouter);
 app.use('/orders', orderRouter)
 app.use('/seller', sellerRouter)
+app.use('/sales', salesRouter)
 
 app.listen(3000, () => {
   console.log(`Server listening on port ${port}`);

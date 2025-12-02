@@ -13,6 +13,7 @@ const isSeller = require('../middlewares/isSeller')
 const productModel = require('../models/product-model');
 const multer = require('multer');
 const { default: storage } = require('../cloudinary');
+const saleModel = require('../models/sale-model');
 
 const upload = multer({ storage });
 
@@ -62,9 +63,14 @@ router.post('/register', async (req, res) => {
         return res.redirect('/access');
     }
 
-    let user = await userModel.findOne({ email });
-    if (user) {
+    let isEmail = await userModel.findOne({ email });
+    if (isEmail) {
         req.flash('registerError', 'User already exists');
+        return res.redirect('/access');
+    }
+    const isUsername =  await userModel.findOne({username})
+    if (isUsername) {
+        req.flash('registerError', 'Username already exists');
         return res.redirect('/access');
     }
 
@@ -152,18 +158,55 @@ router.get('/products/:id', isLoggedIn, async (req, res) => {
         req.flash('error', 'product not approved yet');
         return res.redirect('/');
     }
+    const now = new Date()
+    const activeSales = await saleModel.find({
+        startDate: { $lte: now },
+        endDate: { $gte: now }
+    });
+
+    const applicable = activeSales.filter(s =>
+        s.productIds.includes(product._id.toString())
+    );
+
+    let discountPercent = 0;
+    let discountName = null;
+    let discountEnd = null;
+
+    if (applicable.length > 0) {
+
+        const bestSale = applicable.reduce((max, current) => 
+            current.percentage > max.percentage ? current : max
+        );
+
+        discountPercent = bestSale.percentage;
+        discountName = bestSale.title;
+        discountEnd = bestSale.endDate;
+    }
+
+    let discountedPrice = null;
+    if (discountPercent > 0) {
+        discountedPrice = product.price - (product.price * discountPercent / 100);
+    }
+
+
+
+
     if (!req.user || req.user === 'unsigned') {
         return res.render('product', {
             product,
             user: 'unsigned',
-            productPage: true
+            productPage: true,
+            discountedPrice,
+            discountPercent,
+            discountName,
+            discountEnd
         });
     }
 
     let user = await userModel.findOne({ username: req.user.username });
     let cart = user?.cart || [];
 
-    res.render('product', { product, user: req.user, cart, productPage: true});
+    res.render('product', { product, user: req.user, cart, productPage: true, discountPercent, discountedPrice,discountName,discountEnd});
 });
 
 router.get('/clothings/:category', isLoggedIn, async (req, res) => {
@@ -451,7 +494,7 @@ router.post('/create/:id', async (req, res) => {
 
     const shipmentPayload = {
       booked_packet_weight: 0.5,
-      booking_type: 2, // 2 = COD
+      booking_type: 2, 
       cod_amount: order.totalAmount,
       shipper_name: order.customerName,
       shipper_phone: order.customerPhone,
