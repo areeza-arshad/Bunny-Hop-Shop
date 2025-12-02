@@ -19,15 +19,16 @@
                     <li><a href="/seller/dashboard" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Dashboard</a></li>
                     <li><a href="/seller/plusproducts" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Products</a></li>
                     <li><a href="/orders/all" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Orders</a></li>
+                    <li><a href="/sales" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Sales</a></li>
                 </ul>
             </div>
 
             <!-- Main Content Area -->
             <div class="w-full md:w-3/4 p-4 relative">
-                <h2 class="text-2xl font-semibold mb-4">Your Products</h2>
+                <h2 class="text-2xl font-semibold mb-4">Total Orders</h2>
         <% if (orders.length === 0) { %>
           <div class="w-full h-[50vh] flex flex-col gap-2 justify-center items-center">
-            <p class="text-gray-700 text-xl">No orders yet :(</p>
+            <p class="text-gray-700 text-xl">No orders yet.</p>
             <button onclick="window.location.href='/'" class="px-3 py-2 bg-green-500 text-white rounded-lg ">Someone will place an order soon!</button>
           </div>
         <% } else { %>

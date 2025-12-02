@@ -8,6 +8,7 @@ const userModel = require('../models/user-model')
 const jwt = require('jsonwebtoken')
 const { default: storage } = require('../cloudinary')
 const multer = require('multer')
+const productModel = require('../models/product-model')
 
 const upload = multer({ storage });
 
@@ -119,12 +120,18 @@ router.post('/push', isLoggedIn, isSeller, upload.array('images', 5), async (req
 });
 
 
+// router.get('/plusproducts', isLoggedInStrict, isSeller, async (req,res) => {
+//     let user = await userModel.findOne({username: req.user.username}).populate('products');
+//     let cart = user.cart
+//     let seller = await userModel.findOne({ username: req.user.username }).populate('products')
+//     res.render('plusproducts', {products: seller.products, user: req.user, cart})
+// })
 router.get('/plusproducts', isLoggedInStrict, isSeller, async (req,res) => {
-    let user = await userModel.findOne({username: req.user.username}).populate('products');
-    let cart = user.cart
+    let products = await productModel.find()
     let seller = await userModel.findOne({ username: req.user.username }).populate('products')
-    res.render('plusproducts', {products: seller.products, user: req.user, cart})
+    res.render('plusproducts', {products: products, user: req.user, cart: seller.cart})
 })
+
 
 router.delete('/products/:id', isLoggedIn, async (req, res) => {
   try {

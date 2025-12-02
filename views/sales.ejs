@@ -1,0 +1,290 @@
+<%- include('./partials/Header.ejs', {hidden: true}) %>
+
+<body class="bg-gray-100">
+
+
+        <% if(saleError && saleError.length > 0) { %>
+<div class="seller absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 inset-0 flex justify-center items-center">
+  <div class="rounded-xl h-12 flex items-center justify-center px-5 w-11/12 max-w-lg 
+              bg-red-50 border border-red-200 shadow-md">
+    <p class="text-red-700 text-sm md:text-base lg:text-lg font-semibold tracking-wide flex items-center gap-2">
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 border border-red-300">
+        <svg class="w-3 h-3 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v4m0 4h.01M4.93 19h14.14c1.1 0 1.8-1.18 1.25-2.14L13.25 5.86c-.55-.96-1.95-.96-2.5 0L3.68 16.86C3.13 17.82 3.83 19 4.93 19z" />
+        </svg>
+      </span>
+     <%= saleError[0]  %>
+    </p>
+  </div>
+</div>
+        <% } %> 
+
+    <nav class="bg-[#FFFFF0] text-black p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold">Admin Panel</a>
+            <a href="/logout" class="text-sm">Logout</a>
+        </div>
+    </nav>
+
+
+    <div class="container mx-auto mt-8">
+        <div class="flex flex-col md:flex-row">
+
+            <div class="w-full md:w-1/4 bg-gray-200 p-4">
+                <h2 class="text-lg font-semibold mb-4">Navigation</h2>
+                <ul>
+                    <li><a href="/seller/dashboard" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Dashboard</a></li>
+                    <li><a href="/seller/plusproducts" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Products</a></li>
+                    <li><a href="/orders/all" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Orders</a></li>
+                    <li><a href="/sales" class="block py-2 px-4 bg-gray-300 mb-2 rounded">Sales</a></li>
+                </ul>
+            </div>
+
+            <div class="w-full md:w-3/4 p-4 relative">
+
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold">Sales</h2>
+
+                    <button 
+                        id="openSaleForm"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
+                        Add New Sale +
+                    </button>
+                </div>
+
+
+                <% if (!sales || sales.length === 0) { %>
+                    <div class="p-6 bg-white rounded shadow text-center text-gray-600">
+                        No sales found.
+                    </div>
+                <% } else { %>
+
+       
+                <div class="space-y-4">
+                    <% sales.forEach(sale => { %>
+                        <div class="bg-white rounded shadow p-4 flex justify-between items-center">
+                            
+                            <div>
+                                <p class="font-semibold text-lg"><%= sale.title %></p>
+                                <p class="text-sm text-gray-600">
+                                    From: <%= sale.startDate.toDateString() %>  
+                                    — To: <%= sale.endDate.toDateString() %>
+                                </p>
+                                <p class="text-sm mt-1">
+                                    Products: 
+<% if (sale.productIds && sale.productIds.length === products.length) { %>
+    <span class="font-semibold">All Products</span>
+<% } else { %>
+    <span class="font-semibold"><%= sale.productIds?.length || 0 %> selected</span>
+<% } %>
+
+                                </p>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button 
+                                    class="editSale bg-yellow-500 text-white px-3 py-2 rounded"
+                                    data-sale='<%= JSON.stringify(sale) %>'>
+                                    Edit
+                                </button>
+
+                                <button 
+                                    class="deleteSale bg-red-500 text-white px-3 py-2 rounded"
+                                    data-id="<%= sale._id %>">
+                                    Delete
+                                </button>
+                            </div>
+
+                        </div>
+                    <% }) %>
+                </div>
+
+                <% } %>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div id="saleModal" class="hidden z-50 py-10 fixed inset-0 bg-black/50 flex items-center justify-center">
+        <div class="bg-white  w-full max-w-lg p-6 rounded shadow">
+            <h2 id="modalTitle" class="text-xl font-semibold mb-4">Add Sale</h2>
+
+            <form id="saleForm" method="POST">
+                
+
+                <label class="block mb-2 font-medium">Sale Title</label>
+                <input id="saleTitle" name="title" required 
+                    class="w-full mb-4 p-2 border rounded">
+
+                  <label class="block mb-2 font-medium">Discount Percentage</label>
+                <input type="number" id="salePercentage" name="percentage" required 
+                    class="w-full mb-4 p-2 border rounded">
+
+                <label class="block mb-2 font-medium">Start Date</label>
+                <input type="date" id="saleStart" name="startDate" required
+                    class="w-full mb-4 p-2 border rounded">
+
+
+                <label class="block mb-2 font-medium">End Date</label>
+                <input type="date" id="saleEnd" name="endDate" required
+                    class="w-full mb-4 p-2 border rounded">
+
+   
+                <label class="block mb-2 font-medium">Products</label>
+             <div class="mb-4">
+    <label class="block mb-2 font-medium">Select Products</label>
+
+
+    <div class="flex items-center mb-2">
+        <input 
+            type="checkbox" 
+            id="selectAllProducts" 
+            class="mr-2"
+        >
+        <label for="selectAllProducts" class="cursor-pointer">Select All Products</label>
+    </div>
+
+
+    <div class="max-h-40 overflow-y-auto border p-3 rounded bg-white">
+<% products.forEach((p) => { %>
+    <label class="flex items-center space-x-2 my-1">
+      <input 
+    type="checkbox" 
+    name="products" 
+    class="product-checkbox"
+    value="<%= p._id %>"
+>
+
+        <span><%= p.title %></span>
+    </label>
+<% }) %>
+
+    </div>
+</div>
+
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button"
+                        id="closeModal"
+                        class="px-4 py-2 bg-gray-300 rounded">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded">
+                        Save
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <div id="deleteModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
+        <div class="bg-white p-6 rounded shadow max-w-sm w-full">
+            <h3 class="text-lg font-semibold">Delete Sale?</h3>
+            <p class="text-sm text-gray-600 mb-4">This cannot be undone.</p>
+
+            <div class="flex justify-end gap-3">
+                <button id="cancelDelete" class="px-4 py-2 bg-gray-200 rounded">
+                    Cancel
+                </button>
+                <button id="confirmDelete" class="px-4 py-2 bg-red-500 text-white rounded">
+                    Delete
+                </button>
+            </div>
+        </div>
+       
+
+    </div>
+
+<script>
+    const saleModal = document.getElementById('saleModal');
+    const openBtn = document.getElementById('openSaleForm');
+    const closeModal = document.getElementById('closeModal');
+    const saleForm = document.getElementById('saleForm');
+    const modalTitle = document.getElementById('modalTitle');
+      const selectAll = document.getElementById('selectAllProducts');
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+
+    selectAll.addEventListener('change', () => {
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    });
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            if (!cb.checked) {
+                selectAll.checked = false;
+            } else {
+                const allChecked = [...checkboxes].every(x => x.checked);
+                if (allChecked) selectAll.checked = true;
+            }
+        });
+    });
+
+    const deleteModal = document.getElementById('deleteModal');
+    let deleteId = null;
+
+    
+    openBtn.onclick = () => {
+        modalTitle.innerText = "Add New Sale";
+        saleForm.action = "/sales/create";
+        saleForm.reset();
+        saleModal.classList.remove("hidden");
+    };
+
+    
+ document.querySelectorAll('.editSale').forEach(btn => {
+    btn.onclick = () => {
+        const sale = JSON.parse(btn.dataset.sale);
+
+        modalTitle.innerText = "Edit Sale";
+        saleForm.action = `/sales/update/${sale._id}`;
+
+        document.getElementById("saleTitle").value = sale.title;
+        document.getElementById("salePercentage").value = sale.percentage;
+        document.getElementById("saleStart").value = sale.startDate.split("T")[0];
+        document.getElementById("saleEnd").value = sale.endDate.split("T")[0];
+
+
+        document.querySelectorAll('.product-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+
+ 
+        sale.productIds.forEach(id => {
+            const checkbox = document.querySelector(`.product-checkbox[value="${id}"]`);
+            if (checkbox) checkbox.checked = true;
+        });
+
+        saleModal.classList.remove("hidden");
+    };
+});
+
+    closeModal.onclick = () => saleModal.classList.add("hidden");
+
+    
+    document.querySelectorAll('.deleteSale').forEach(btn => {
+        btn.onclick = () => {
+            deleteId = btn.dataset.id;
+            deleteModal.classList.remove("hidden");
+        };
+    });
+
+    document.getElementById('cancelDelete').onclick = () => {
+        deleteModal.classList.add("hidden");
+    };
+
+    document.getElementById('confirmDelete').onclick = async () => {
+        await fetch(`/sales/${deleteId}`, { method: "DELETE" });
+        window.location.reload();
+    };
+</script>
+
+</body>
+</html>
+
+<%- include('./partials/Footer.ejs') %>

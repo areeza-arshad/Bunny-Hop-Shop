@@ -137,7 +137,7 @@ scrollCard()
       })
       if (window.innerWidth <= 768) {
         gsap.to('.glamhover', {
-          y: -280,
+          y: -320,
           duration: .5,
           opacity: 1,
         })
@@ -153,10 +153,18 @@ scrollCard()
     )
 
     box.addEventListener('mouseleave', (e) => {
-      gsap.to('.glam', {
+       if (window.innerWidth <= 768) {
+        gsap.to('.glam', {
         duration: .5,
-        y: 0,
+        y: -100,
       })
+      } else{
+        gsap.to('.glam', {
+        duration: .5,
+        y: -320,
+      })
+      }
+      
       gsap.to('.glamhover', {
         duration: .5,
         opacity: 0,

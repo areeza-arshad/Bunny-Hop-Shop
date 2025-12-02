@@ -17,6 +17,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 
+const saleModel = require('../models/sale-model');
+//  6793825ad13524b2074427dcf16814bd6c4feff9
 
 const upload = multer({ storage });
 
@@ -25,7 +27,7 @@ router.get('/', isLoggedIn, async function (req, res) {
     let feat = await productModel.find({ tags: 'featured' });
     let trendy = await productModel.find({ tags: 'trend' });
 
-    //  FIX: If user is unsigned OR req.user is null/undefined → no username access
+ 
     if (!req.user || req.user === 'unsigned') {
         return res.render('index', {
             user: 'unsigned',
@@ -36,7 +38,7 @@ router.get('/', isLoggedIn, async function (req, res) {
         });
     }
 
-    //  SAFE: Only runs when req.user exists and has username
+
     let user = await userModel.findOne({ username: req.user.username });
     let cart = user?.cart || [];
 
@@ -74,9 +76,14 @@ router.post('/register', async (req, res) => {
         return res.redirect('/access');
     }
 
-    let user = await userModel.findOne({ email });
-    if (user) {
+    let isEmail = await userModel.findOne({ email });
+    if (isEmail) {
         req.flash('registerError', 'User already exists');
+        return res.redirect('/access');
+    }
+    const isUsername =  await userModel.findOne({username})
+    if (isUsername) {
+        req.flash('registerError', 'Username already exists');
         return res.redirect('/access');
     }
 
@@ -246,18 +253,55 @@ router.get('/products/:id', isLoggedIn, async (req, res) => {
         req.flash('error', 'product not approved yet');
         return res.redirect('/');
     }
+    const now = new Date()
+    const activeSales = await saleModel.find({
+        startDate: { $lte: now },
+        endDate: { $gte: now }
+    });
+
+    const applicable = activeSales.filter(s =>
+        s.productIds.includes(product._id.toString())
+    );
+
+    let discountPercent = 0;
+    let discountName = null;
+    let discountEnd = null;
+
+    if (applicable.length > 0) {
+
+        const bestSale = applicable.reduce((max, current) => 
+            current.percentage > max.percentage ? current : max
+        );
+
+        discountPercent = bestSale.percentage;
+        discountName = bestSale.title;
+        discountEnd = bestSale.endDate;
+    }
+
+    let discountedPrice = null;
+    if (discountPercent > 0) {
+        discountedPrice = product.price - (product.price * discountPercent / 100);
+    }
+
+
+
+
     if (!req.user || req.user === 'unsigned') {
         return res.render('product', {
             product,
             user: 'unsigned',
-            productPage: true
+            productPage: true,
+            discountedPrice,
+            discountPercent,
+            discountName,
+            discountEnd
         });
     }
 
     let user = await userModel.findOne({ username: req.user.username });
     let cart = user?.cart || [];
 
-    res.render('product', { product, user: req.user, cart, productPage: true});
+    res.render('product', { product, user: req.user, cart, productPage: true, discountPercent, discountedPrice,discountName,discountEnd});
 });
 
 router.get('/clothings/:category', isLoggedIn, async (req, res) => {
@@ -361,7 +405,8 @@ router.get('/clothings/:category', isLoggedIn, async (req, res) => {
 // })
 
 router.get('/fits/:gender', isLoggedIn, async (req, res) => {
-    let selectedProducts = await productsModel.find({ gender: req.params.gender, isApproved: true });
+    console.log(req.params.gender.toLowerCase().slice(0,-1))
+    let selectedProducts = await productsModel.find({ gender: req.params.gender.toLowerCase().slice(0,-1), isApproved: true });
 
     let gender = req.params.gender.toLowerCase();
     let displayGender = gender.charAt(0).toUpperCase() + gender.slice(1);
@@ -544,7 +589,7 @@ router.post('/create/:id', async (req, res) => {
 
     const shipmentPayload = {
       booked_packet_weight: 0.5,
-      booking_type: 2, // 2 = COD
+      booking_type: 2, 
       cod_amount: order.totalAmount,
       shipper_name: order.customerName,
       shipper_phone: order.customerPhone,
