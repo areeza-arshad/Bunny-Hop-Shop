@@ -17,27 +17,32 @@
    <div class="wrapper w-screen relative overflow-x-hiddden bg-[#FFFFF0]">
     <div class="page h-screen flex lg:flex-row flex-col">
        <div class="left lg:w-1/2 w-full h-full flex-col flex max-lg:px-2">
-       <h1 class=" logo flex absolute text-5xl mt-8 ml-4 font-sans">
-        <span>R</span>
-        <span>ê</span>
-        <span>v</span>
-        <span>e</span> 
-        <span>&nbsp;</span>
-        <span>d’</span>
-        <span class="text-yellow-400">O</span>
-       <span>r</span>
-    </h1> 
+        <h1 class=" logo flex absolute text-5xl mt-8 ml-4 font-sans">
+            <span>B</span>
+            <span>u</span>
+            <span>n</span>
+            <span>n</span> 
+            <span>y</span>
+            <!-- <span>&nbsp;</span> -->
+            <span>h</span>
+            <span class="text-yellow-400">O</span>
+            <span>p</span>
+        </h1> 
         <section class="lg:h-screen max-lg:mt-36 max-lg:ml-0 h-fit lg:w-96 max-lg:rounded justify-items-center w-[95vw] py-8 bg-pink-300 lg:ml-60 relative">
             <div class="container lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 flex justify-center flex-col items-center gap-2 font-serif">
                 <div class="ups flex flex-col items-center justify-center"><h1 class=" text-5xl">Lets <span class="text-blue-500">Begin</span> </h1>
-                <p class="">Create your account now!</p>
-            </div>
+                    <p class="">Create your account now!</p>
+                </div>
             <div class="flex flex-col font-sans ">
                 <form action="/register" method="post" class="flex flex-col gap-4 items-center">
-                    <input type="text" placeholder="Full Name" name="fullName" class="w-64 h-fit py-1 px-2 rounded" required>
-                    <input type="email" placeholder="Email" name="email" class="w-64 h-fit py-1 px-2 rounded" required>
-                    <input type="text" placeholder="Username" name="username" class="w-64 h-fit py-1 px-2 rounded" required>
-                    <input type="password" placeholder="Password" name="password" class="w-64 h-fit py-1 px-2 rounded" required>
+                    <input type="text" placeholder="Full Name" name="fullName" class="w-64 h-fit py-1 px-2 rounded outline-none" required>
+                    <input type="email" placeholder="Email" name="email" class="w-64 h-fit py-1 px-2 rounded outline-none" required>
+                    <input type="text" placeholder="Username" name="username" class="w-64 h-fit py-1 px-2 rounded outline-none" required>
+                    <div class="flex justify-between w-64 h-fit py-1 px-2 rounded bg-white">
+                        <input id="signupPassword" type="password" placeholder="Password" name="password" autocomplete="new-password" class="bg-transparent outline-none border-none" required/>
+                        <span class="cursor-pointer" id="signupToggle" onclick="togglePassword('signupPassword', 'signupToggle')">show</span>
+                    </div>
+                    <!-- <input type="password" placeholder="Password" name="password" class="w-64 h-fit py-1 px-2 rounded" required> -->
                     <%if(registerError && registerError.length > 0) { %>
                         <p class="text-red-500 font-medium"><%= registerError[0] %></p>
                     <% } %>
@@ -46,7 +51,6 @@
                 </form>
             </div>
             </div>
-
         </section>
         <% if(sellerError && sellerError.length > 0) { %>
             <div class="seller fixed inset-0 flex justify-center items-center ">
@@ -64,8 +68,17 @@
         </div>
         <div class="flex flex-col font-sans ">
             <form action="/login" method="post" class="flex flex-col gap-4 items-center">
-                <input type="email" placeholder="Email" name="email" class="w-64 h-fit py-1 px-2 rounded bg-slate-200">
-                <input type="password" placeholder="Password" name="password" class="w-64 h-fit py-1 px-2 rounded bg-slate-200">
+                <input type="email" placeholder="Email" name="email" class="w-64 h-fit py-1 px-2 rounded outline-none bg-slate-200">
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between w-64 h-fit py-1 px-2 rounded bg-slate-200">
+                        <input id="loginPassword" type="password" placeholder="Password" name="password" autocomplete="new-password" class="bg-transparent outline-none border-none" required/>
+                        <span class="cursor-pointer" id="loginToggle" onclick="togglePassword('loginPassword', 'loginToggle')">show</span>
+                    </div>
+                    <p class="text-blue-800 text-xs cursor-pointer">
+                        <a href="/forgot-password" class="text-left">Forgot Password?</a>
+                    </p>
+                </div>
+                <!-- <input type="password" placeholder="Password" name="password" class="w-64 h-fit py-1 px-2 rounded bg-slate-200"> -->
                 <%if(loginError && loginError.length > 0) { %>
                     <p class="text-red-500 font-medium"><%= loginError[0] %></p>
                 <% } %>
@@ -73,11 +86,28 @@
                 " >Log in</button>
             </form>
             
+
+            
         </div>
        
         </div>
        </div>
     </div>
+    <script>
+        let showPassword = {};
+
+        function togglePassword(inputId, toggleId) {
+            showPassword[inputId] = !showPassword[inputId];
+
+            const input = document.getElementById(inputId);
+            const text = document.getElementById(toggleId);
+
+            input.type = showPassword[inputId] ? "text" : "password";
+            text.innerText = showPassword[inputId] ? "hide" : "show";
+        }
+    </script>
+
+
      <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
 
     <dotlottie-player class="absolute cart max-lg:scale-50 -top-[11%] left-[5%] lg:left-[42%] lg:top-[45%]" src="https://lottie.host/9e339971-8d89-443f-86b5-01c2d4b54897/rB5kN0ac9C.json" background="transparent" speed="1" style="width: 350px; height: 350px;" loop autoplay></dotlottie-player>

@@ -64,6 +64,8 @@ const userModel = mongoose.Schema({
         ref: 'order', 
       },
     ],
+    resetToken: String,
+    resetTokenExpiry: Date
 }, {timestamps: true})
 
 module.exports = mongoose.model('user', userModel)

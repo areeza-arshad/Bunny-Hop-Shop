@@ -13,7 +13,12 @@ const isSeller = require('../middlewares/isSeller')
 const productModel = require('../models/product-model');
 const multer = require('multer');
 const { default: storage } = require('../cloudinary');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
+
 const saleModel = require('../models/sale-model');
+//  6793825ad13524b2074427dcf16814bd6c4feff9
 
 const upload = multer({ storage });
 
@@ -53,6 +58,14 @@ router.get('/access', redirectIfLogin, function (req, res) {
     let sellerError = req.flash('sellerError')
     res.render('access', { registerError, loginError, sellerError })
 })
+
+router.get('/forgot-password', (req, res) => {
+    res.render('forgot-password', {
+        error: req.flash('forgotError'),
+        message: req.flash('forgotMessage')
+    });
+});
+
 
 router.post('/register', async (req, res) => {
     let { fullName, email, username, password } = req.body;
@@ -108,6 +121,88 @@ router.post('/register', async (req, res) => {
         req.flash('registerError', 'something went wrong');
         res.redirect('/access');
     }
+});
+
+
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    let user = await userModel.findOne({ email });
+    if (!user) {
+        req.flash('registerError', 'Email not found');
+        return res.redirect('/access');
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+
+    user.resetToken = token;
+    user.resetTokenExpiry = Date.now() + 1000 * 60 * 15; // 15 minutes
+    await user.save();
+
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
+
+    // Nodemailer
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+
+    await transporter.sendMail({
+        from: 'Your App',
+        to: email,
+        subject: 'Reset Password',
+        html: `
+            <p>Click the link below to reset your password:</p>
+            <a href="${resetLink}">Reset Password</a>
+        `
+    });
+
+    req.flash('registerError', 'Reset link sent to your email');
+    res.redirect('/access');
+});
+
+
+router.get('/reset-password/:token', async (req, res) => {
+    const token = req.params.token;
+
+    const user = await userModel.findOne({
+        resetToken: token,
+        resetTokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        return res.send("Invalid or expired token");
+    }
+
+    res.render('reset-password', { token, error: null });
+});
+
+router.post('/reset-password', async (req, res) => {
+    const { password, token } = req.body;
+
+    const user = await userModel.findOne({
+        resetToken: token,
+        resetTokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        return res.send("Invalid or expired token");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(password, salt);
+
+    user.password = hash;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+
+    await user.save();
+
+    req.flash('registerError', 'Password reset successful. You can login now.');
+    res.redirect('/access');
 });
 
 
