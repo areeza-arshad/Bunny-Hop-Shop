@@ -40,6 +40,12 @@
       <% selectedProducts.forEach((fit) => { %>
       <div class="group relative flex flex-col scroll-card">
         <div class="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
+                <% if (fit.discountInfo.percent && fit.discountInfo.percent > 0) { %>
+              <div class="absolute top-0 bg-slate-500 text-sm text-center text-white rounded-full h-12 w-12 flex justify-center items-center z-50">
+                  <%= fit.discountInfo.percent %>% <br> OFF
+              </div>
+            <% } %>
+
           <img onclick="window.location.href='/products/<%=fit._id%>'" src="<%= fit.mainImage %>" alt="Product Image" class="h-full w-full object-cover object-center lg:h-full lg:w-full">
         </div>
         <div class="mt-4 flex justify-between">
@@ -56,7 +62,14 @@
               <% } %>
             <% } %>
           </div>
-          <p class="text-sm font-medium text-gray-900"><%= fit.price %></p>
+           <% if (fit.discountInfo && fit.discountInfo.percent > 0) { %>
+    <div class="text-right">
+      <p class="text-sm text-gray-500 line-through">PKR.<%= fit.price %></p>
+      <p class="text-sm font-bold text-green-600">PKR.<%= fit.discountInfo.finalPrice %></p>
+    </div>
+  <% } else { %>
+    <p class="text-sm font-medium text-gray-900">PKR.<%= fit.price %></p>
+  <% } %>
         </div>
         <div class="mt-auto flex flex-col space-y-2 sm:space-y-0 sm:space-x-2 sm:flex-row">
           <button  data-fitId="<%= fit._id%>" class="w-full add-btn mt-5 bg-slate-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"><i class="ri-shopping-cart-2-line"></i> Add to cart

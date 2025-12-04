@@ -64,20 +64,20 @@ const addToCart = require('../middlewares/addto-cart');
 router.get('/', isLoggedIn, addToCart, async function (req, res) {
     let error = req.flash('error');
 
-    // 1) Active sales find karo
+    
     const now = new Date();
     const activeSales = await saleModel.find({
         startDate: { $lte: now },
         endDate: { $gte: now }
     });
 
-    // 2) Featured products fetch
+
     let featProducts = await productsModel.find({ tags: 'featured' });
 
-    // 3) Trendy products fetch
+
     let trendyProducts = await productsModel.find({ tags: 'trend' });
 
-    // Function: product me sale percentage inject karne ke liye
+   
     function applySale(products) {
         return products.map(p => {
             const applicable = activeSales.filter(s =>
@@ -85,26 +85,28 @@ router.get('/', isLoggedIn, addToCart, async function (req, res) {
             );
 
             let discountPercent = 0;
-
+            let discountPrice = 0
             if (applicable.length > 0) {
                 const best = applicable.reduce((a, b) =>
                     a.percentage > b.percentage ? a : b
                 );
                 discountPercent = best.percentage;
+       discountPrice = Math.round(p.price - (p.price * discountPercent / 100));
             }
 
             return {
                 ...p.toObject(),
-                discountPercent
+                discountPercent,
+                discountPrice
             };
         });
     }
 
-    // 4) Apply sale to both lists
+  
     let feat = applySale(featProducts);
     let trendy = applySale(trendyProducts);
 
-    // 5) Render
+ 
     res.render('index', {
         user: res.locals.user,
         feat,
@@ -366,6 +368,7 @@ router.get('/products/:id', isLoggedIn, addToCart, async (req, res) => {
 });
 
 router.get('/clothings/:category', isLoggedIn, async (req, res) => {
+  try {
     const category = req.params.category.toLowerCase();
     const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
 
@@ -373,52 +376,74 @@ router.get('/clothings/:category', isLoggedIn, async (req, res) => {
     const searchTerm = req.query.searched?.toLowerCase();
     const isUnsigned = !req.user || req.user === 'unsigned';
 
-
     let query = {
-        category: { $in: [category] },
-        isApproved: true
+      category: { $in: [category] },
+      isApproved: true
     };
 
     if (gender === 'boy' || gender === 'boys') query.gender = 'boy';
     if (gender === 'girl' || gender === 'girls') query.gender = 'girl';
 
+
     if (searchTerm) {
-        const selectedProducts = await productsModel.find({
-            title: { $regex: searchTerm, $options: 'i' }
-        });
+      let selectedProducts = await productsModel.find({
+        title: { $regex: searchTerm, $options: 'i' }
+      });
 
-        return res.render('categorized', {
-            user: req.user,
-            req,
-            cart: isUnsigned ? [] : (await userModel.findOne({ username: req.user.username })).cart,
-            selectedProducts,
-            displayCategory,
-            searched: true,
-            request: req.query.searched,
-            cat: false,
-            gen: false
-        });
-    }
-
- 
-    let cart = [];
-    if (!isUnsigned) {
-        const dbUser = await userModel.findOne({ username: req.user.username });
-        cart = dbUser.cart || [];
-    }
-
-    const selectedProducts = await productsModel.find(query);
-
-    return res.render('categorized', {
+      selectedProducts = await Promise.all(
+        selectedProducts.map(async (p) => {
+          const discountInfo = await getDiscountForProduct(p._id);
+          p = p.toObject();
+          p.discountInfo = discountInfo;
+          return p;
+        })
+      );
+  
+      return res.render('categorized', {
         user: req.user,
         req,
-        cart,
+        cart: isUnsigned ? [] : (await userModel.findOne({ username: req.user.username })).cart,
         selectedProducts,
         displayCategory,
-        category,
-        cat: true,
+        searched: true,
+        request: req.query.searched,
+        cat: false,
         gen: false
+      });
+    }
+
+    let cart = [];
+    if (!isUnsigned) {
+      const dbUser = await userModel.findOne({ username: req.user.username });
+      cart = dbUser.cart || [];
+    }
+
+    let selectedProducts = await productsModel.find(query);
+
+
+    selectedProducts = await Promise.all(
+      selectedProducts.map(async (p) => {
+        const discountInfo = await getDiscountForProduct(p._id);
+        p = p.toObject();
+        p.discountInfo = discountInfo;
+        return p;
+      })
+    );
+    console.log(selectedProducts , "all here")
+    return res.render('categorized', {
+      user: req.user,
+      req,
+      cart,
+      selectedProducts,
+      displayCategory,
+      category,
+      cat: true,
+      gen: false
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to load category");
+  }
 });
 
 
@@ -467,19 +492,42 @@ router.get('/clothings/:category', isLoggedIn, async (req, res) => {
 // })
 
 router.get('/fits/:gender', isLoggedIn, async (req, res) => {
-    console.log(req.params.gender.toLowerCase().slice(0,-1))
-    let selectedProducts = await productsModel.find({ gender: req.params.gender.toLowerCase().slice(0,-1), isApproved: true });
+  try {
+
+    const genderParam = req.params.gender.toLowerCase().slice(0, -1);
+    let selectedProducts = await productsModel.find({ gender: genderParam, isApproved: true });
+
+    selectedProducts = await Promise.all(
+      selectedProducts.map(async (p) => {
+        const discountInfo = await getDiscountForProduct(p._id);
+        p = p.toObject(); 
+        p.discountInfo = discountInfo;
+        return p;
+      })
+    );
 
     let gender = req.params.gender.toLowerCase();
     let displayGender = gender.charAt(0).toUpperCase() + gender.slice(1);
 
     let cart = null;
     if (req.user && req.user.username) {
-        let dbUser = await userModel.findOne({ username: req.user.username });
-        cart = dbUser?.cart || null;
+      let dbUser = await userModel.findOne({ username: req.user.username });
+      cart = dbUser?.cart || null;
     }
 
-    return res.render('categorized', { user: req.user || null, selectedProducts, gender: displayGender, gen: true, cat: false, cart, req});
+    return res.render('categorized', {
+      user: req.user || null,
+      selectedProducts,
+      gender: displayGender,
+      gen: true,
+      cat: false,
+      cart,
+      req
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to load fits");
+  }
 });
 
 router.get('/login', redirectIfLogin, (req, res) => {

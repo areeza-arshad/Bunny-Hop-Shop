@@ -169,7 +169,14 @@
                 <% } %> <% } %>
               </p>
             </div>
-            <p class="text-2xl font-medium text-gray-900">PKR <%= fit.price%></p>
+  <% if (fit.discountPercent && fit.discountPercent > 0) { %>
+    <div class="text-right">
+      <p class="text-sm text-gray-500 line-through">PKR <%= fit.price %></p>
+      <p class="text-sm font-bold text-green-600">PKR <%= fit.discountPrice %></p>
+    </div>
+  <% } else { %>
+    <p class="text-2xl font-medium text-gray-900">PKR <%= fit.price %></p>
+  <% } %>
           </div>
           <div
             class="box h-12 max-sm:h-10 w-full bg-black flex items-center mt-2"
