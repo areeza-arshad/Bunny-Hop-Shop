@@ -591,6 +591,8 @@ router.get('/remove-from-cart/:id', isLoggedIn, async (req, res) => {
         res.redirect('/cart')
     } catch (error) {
         console.log(error)
+        req.flash("error", "Something went wrong")
+        return res.redirect("/cart")
     }
 })
 router.get('/sub-quantity/:id', isLoggedIn, async (req, res) => {
@@ -607,14 +609,15 @@ router.get('/sub-quantity/:id', isLoggedIn, async (req, res) => {
         product.quantity -= 1
     } else{
         product.quantity = 1
-        req.flash('error', 'cannot order more than 500 products')
+        req.flash('error', 'You must have at least one product to purchase')
         return res.redirect('/cart')
     }
     res.cookie("guestCart", JSON.stringify(guestCart), { httpOnly: true });
     return res.redirect('/cart')
 
     }
-    let product = user.cart.find(product => product._id == req.params.id)
+    let product = user.cart.find(product => product.productId.toString() == req.params.id)
+    console.log(product)
     if(product && product.quantity > 1) {
         product.quantity -= 1
     } else{
@@ -626,7 +629,8 @@ router.get('/sub-quantity/:id', isLoggedIn, async (req, res) => {
         await user.save()
         res.redirect('/cart')
     } catch (error) {
-        console.log(error)
+        req.flash("error", "Something went wrong")
+        return res.redirect("/cart")
     }
 
 })
@@ -640,30 +644,33 @@ router.get('/add-quantity/:id', isLoggedIn, async (req, res) => {
         }
     const product = guestCart.find(p => p.productId === req.params.id)
 
-    if(product && product.quantity < 500) {
+    if(product && product.quantity < 200) {
         product.quantity += 1
     } else{
-        product.quantity = 500
-        req.flash('error', 'cannot order more than 500 products')
+        product.quantity = 200
+        req.flash('error', 'cannot order more than 200 products')
         return res.redirect('/cart')
     }
     res.cookie("guestCart", JSON.stringify(guestCart), { httpOnly: true });
     return res.redirect('/cart')
 
     }
-    let product = user.cart.find(product => product._id == req.params.id)
-    if(product && product.quantity < 100) {
+    console.log(user.cart)
+    let product = user.cart.find(product => product.productId.toString() === req.params.id)
+    console.log(product)
+    if(product && product.quantity < 200) {
         product.quantity += 1
     } else{
-        product.quantity = 100
-        req.flash('error', 'cannot order more than 100 products')
+        product.quantity = 200
+        req.flash('error', 'cannot order more than 200 products')
         return res.redirect('/cart')
     }
     try {
         await user.save()
         res.redirect('/cart')
     } catch (error) {
-        console.log(error)
+        req.flash("error", "Something went wrong")
+        return res.redirect("/cart")
     }
 
 })
