@@ -175,12 +175,12 @@ router.post('/register', async (req, res) => {
                         process.env.TOKEN
                     );
                     
-                res.cookie('token', token, {
-  httpOnly: true,   
-  secure: true,        
-  sameSite: 'lax',       
-  maxAge: 30 * 24 * 60 * 60 * 1000 
-})
+res.cookie('token', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  maxAge: 30 * 24 * 60 * 60 * 1000
+});
 
                     res.redirect('/');
                 } catch (error) {
@@ -304,12 +304,12 @@ if (!result) {
 
               if (result) {
                   let token = jwt.sign({ username: user.username, userId: user._id, isSeller: user.isSeller}, process.env.TOKEN)
-                  res.cookie('token', token, {
-    httpOnly: true,   
-    secure: true,        
-    sameSite: 'lax',       
-    maxAge: 30 * 24 * 60 * 60 * 1000 
-  })
+res.cookie('token', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  maxAge: 30 * 24 * 60 * 60 * 1000
+});
 
                   res.redirect('/')
               }
