@@ -15,6 +15,9 @@
     font-family: 'oswald';
     src: url(../fonts/oswald.woff2);
 }
+.romper {
+    
+}
 html,body{
     width: 100vw;
     overflow-x: hidden !important;

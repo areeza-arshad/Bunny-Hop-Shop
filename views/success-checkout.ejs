@@ -1,16 +1,109 @@
 <%- include('./partials/Header.ejs', {hidden: true}) %>
-<div class="wrapper bg-gray-100 flex items-center justify-center min-h-screen relative">
+<div class="w-full wrapper bg-gray-100 min-h-screen relative font-sans">
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script> 
 
-    <dotlottie-player class="cart-done max-sm:scale-75 max-sm:top-[42%] absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2" src="https://lottie.host/ba63ec0b-0b2e-4ce4-a5d2-23530049fef2/9RNhr1lhwl.json" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></dotlottie-player>
-    <div id="success-message" class="max-w-md w-full max-sm:scale-75 success-msg opacity-0 bg-white shadow-lg rounded-lg p-10 text-center fade-in-up">
+    <!-- <dotlottie-player class="cart-done max-sm:scale-75 max-sm:top-[42%] absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2" src="https://lottie.host/ba63ec0b-0b2e-4ce4-a5d2-23530049fef2/9RNhr1lhwl.json" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></dotlottie-player> -->
+    <!-- <div id="success-message" class="max-w-md w-full max-sm:scale-75 success-msg opacity-0 bg-white shadow-lg rounded-lg p-10 text-center fade-in-up">
         <h2 class="text-2xl font-semibold text-gray-700 mt-4">Order Successful!</h2>
         <p class="text-gray-600 mt-2">Thank you for your purchase. Your order has been placed successfully.</p>
         <p class="text-gray-600 mt-2">If you haven't created an account yet, check your email for confirmation</p>
         <button class="mt-6 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" onclick="redirectToHomepage()">Go to Homepage</button>
+    </div> -->
+    <div class="flex flex-col gap-4">
+        <div class="p-4">
+            <h1 onclick="window.location.href='/'"  class="logo px-2 text-center flex text-2xl font-sans">
+                <span>B</span>
+                <span>u</span>
+                <span>n</span>
+                <span>n</span>
+                <span>y</span>
+                <span>&nbsp;</span>
+                <span>h</span>
+                <span class="text-yellow-400">O</span>
+                <span>p</span>
+            </h1>
+        </div>
+        <div class="flex justify-between items-start bg-gray-200 border border-gray-300 py-2 px-8 max-w-full">
+            <div>
+                <div class="flex items-start order-header">
+                    <span class="text-sm text-slate-900 font-medium">Show order summary</span>
+                    <span id="toggle-arrow" class="cursor-pointer leading-none"><i class="ri-arrow-down-s-line text-xl"></i></span>
+                </div>
+
+                <div class="order-items" style="display: none;">
+                    <% order.items.forEach(item => { %>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-sm font-medium text-black">
+                                Product: <%= item.productId.title %>
+                            </p>
+                            <p class="text-sm font-medium text-black">
+                                Quantity: <%= item.quantity %>
+                            </p>
+                            <p class="text-sm font-medium text-black">
+                                Price: PKR <%= item.productId.price %>
+                            </p>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="text-black text-sm md:text-2xl font-medium md:mr-4">
+                Rs.<%= order.totalPrice %>
+            </div>
+        </div>
+        <div class="flex items-center gap-1 py-2 px-4 ml-4">
+            <div class="order-done"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" fill="currentColor"><path d="M4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12ZM12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM17.4571 9.45711L16.0429 8.04289L11 13.0858L8.20711 10.2929L6.79289 11.7071L11 15.9142L17.4571 9.45711Z"></path></svg></div>
+            <div>
+                <div class="text-xs md:text-sm text-gray-600 w-full">Order #<%= order._id %></div>
+                <!-- <div class="text-xl md:text-2xl text-black font-sans">Thank you <%= order.fullName %>!</div> -->
+                <% if(userType === "loggedIn") { %>
+                <div class="text-xl md:text-2xl text-black font-sans font-medium">Thank you <span class="capitalize"><%= user.username %></span>!</div>
+                <% } else { %>
+                <div class="text-xl md:text-2xl text-black font-sans font-medium">Thank you <span class="capitalize"><%= order.fullName %></span>!</div>
+                <% } %>
+            </div>
+        </div>
+        <div class="px-4 mx-4">
+            <div class="py-2 px-4 border border-gray-300 rounded-md flex flex-col gap-3">
+                <div class="text-xl font-medium text-black">Your order is confirmed</div>
+                <div class="text-sm text-gray-600">Your order has been placed successfully. Check your E-mail for confirmation!.</div>
+            </div>
+        </div>
+        <div class="px-4 py-4 mx-4">
+            <div class="py-2 px-4 border border-gray-300 rounded-md flex flex-col gap-2">
+                <div class="text-xl font-medium text-black">Customer information</div>
+                <div class="text-sm text-black font-medium">Contact information</div>
+                <div class="text-sm text-gray-700"><%= order.email %></div>
+                <div class="flex flex-col">
+                    <div class="text-sm font-medium text-black py-2">Shipping address</div>
+                    <div class="text-sm text-gray-700"><%= order.fullName %> <%= order.lastName %></div>
+                    <div class="text-sm text-gray-700"><%= order.shippingAddress.street %></div>
+                    <div class="text-sm text-gray-700"><%= order.shippingAddress.city %></div>
+                    <div class="text-sm text-gray-700"><%= order.shippingAddress.zip %></div>
+                    <div class="text-sm text-gray-700"><%= order.shippingAddress.state %></div>
+                    <div class="text-sm text-gray-700"><%= order.phoneNumber %></div>
+                </div>
+            </div>
+            
+        </div>
     </div>
 </div>
 <%- include('./partials/Footer.ejs') %>
+<script>
+    const header = document.querySelector('.order-header');
+    const items = document.querySelector('.order-items');
+    const arrow = document.getElementById('toggle-arrow');
+
+    header.addEventListener('click', () => {
+        if (items.style.display === 'none') {
+            items.style.display = 'block';
+            arrow.innerHTML = '<i class="ri-arrow-up-s-line text-xl"></i>' // arrow up when open
+        } else {
+            items.style.display = 'none';
+            arrow.innerHTML = '<i class="ri-arrow-down-s-line text-xl"></i>' // arrow down when closed
+        }
+    });
+</script>
 <script>
     cartAnimation()
 </script>
